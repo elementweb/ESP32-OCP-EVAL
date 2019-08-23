@@ -3,6 +3,8 @@ const SerialPort = require('serialport');
 const base64file = require('file-base64');
 const fs = require('fs');
 const filepath = require('path');
+const randomstring = require("randomstring");
+const crypto = require('crypto');
 
 let params = process.argv.slice(2);
 
@@ -126,4 +128,14 @@ if(params[1] == 'receive') {
       buffer += data.toString('utf8');
     }
   });
+}
+
+if(params[1] == 'bytes') {
+  let string = randomstring.generate(params[2]);
+  
+  primary.write(string);
+
+  let hash = crypto.createHash('md5').update(string).digest("hex");
+
+  console.log(hash);
 }
