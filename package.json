@@ -1,0 +1,24 @@
+{
+  "name": "esp32-ocp-eval",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elementweb/ESP32-OCP-EVAL.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elementweb/ESP32-OCP-EVAL/issues"
+  },
+  "homepage": "https://github.com/elementweb/ESP32-OCP-EVAL#readme",
+  "dependencies": {
+    "file-base64": "^1.0.0",
+    "js-base64": "^2.5.1",
+    "serialport": "^7.1.5"
+  }
+}
