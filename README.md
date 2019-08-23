@@ -1,6 +1,6 @@
 # ESP32-OCP-EVAL
 
-Serial port tinker
+Serial port tinker for ESP32 OCP model evaluation
 
 ## Installation
 
