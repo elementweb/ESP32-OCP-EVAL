@@ -16,6 +16,8 @@ npm install
 main.js [com-port] [command] [arguments]
 ```
 
+Examples:
+
 ```sh
 node main.js COM5 message
 node main.js COM5 listen
