@@ -8,18 +8,18 @@ const crypto = require('crypto');
 
 let params = process.argv.slice(2);
 
-const readline = require('readline').createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-const primary = new SerialPort(params[0], { baudRate : 115200 });
+const primary = new SerialPort(params[0], { baudRate : 460800 });
 
 if(params[1] == 'message') {
+  var readline = require('readline').createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
   let recursiveAsyncReadLine = function () {
     readline.question('> ', function (message) {
       primary.write('%');
-      primary.write(message);
+      primary.write(Buffer.from(message));
       primary.write('*');
 
       recursiveAsyncReadLine();
@@ -71,10 +71,14 @@ if(params[1] == 'send') {
     }
 
     base64file.encode(path, function(err, base64) {
-      primary.write('%');
-      primary.write(Buffer.from(filename).toString('base64') + '$');
-      primary.write(base64);
-      primary.write('*');
+      file = Buffer.from(base64).toString();
+      filename = Buffer.from(filename).toString('base64');
+
+      buf = '%' + filename + '$' + file + '*';
+
+      primary.write(Buffer.from(buf).toString());
+
+      console.log('length: ' + buf.length);
     });
   })
 }
@@ -131,11 +135,12 @@ if(params[1] == 'receive') {
 }
 
 if(params[1] == 'bytes') {
-  let string = randomstring.generate(params[2]);
+  let string = randomstring.generate(parseInt(params[2]));
   
   primary.write(string);
 
   let hash = crypto.createHash('md5').update(string).digest("hex");
 
-  console.log(hash);
+  console.log('data: ' + string);
+  console.log('md5: ' + hash);
 }
