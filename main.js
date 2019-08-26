@@ -4,7 +4,7 @@ const base64file = require('file-base64');
 const fs = require('fs');
 const filepath = require('path');
 const randomstring = require("randomstring");
-const crypto = require('crypto');
+const md5File = require('md5-file');
 
 let params = process.argv.slice(2);
 
@@ -16,10 +16,30 @@ if(params[1] == 'message') {
     output: process.stdout
   });
 
+  global.buffer = '';
+
+  primary.on('data', function(data) {
+    global.buffer += data.toString('utf8');
+
+    if(global.buffer.indexOf('%') !== -1) {
+      global.buffer = global.buffer.split("%").pop();
+    }
+
+    if(global.buffer.indexOf('*') !== -1) {
+      global.buffer = global.buffer.split("*")[0];
+      
+      process.stdout.cursorTo(0);
+      process.stdout.write('receive> ' + Buffer.from(global.buffer, 'base64').toString() + '\n');
+      process.stdout.write('send> ');
+
+      global.buffer = '';
+    }
+  });
+
   let recursiveAsyncReadLine = function () {
-    readline.question('> ', function (message) {
+    readline.question('send> ', function (message) {
       primary.write('%');
-      primary.write(Buffer.from(message));
+      primary.write(Buffer.from(message).toString('base64'));
       primary.write('*');
 
       recursiveAsyncReadLine();
@@ -27,37 +47,6 @@ if(params[1] == 'message') {
   };
 
   recursiveAsyncReadLine();
-}
-
-if(params[1] == 'listen') {
-  var buffer = '';
-  var incoming_message = false;
-
-  primary.on('data', function(data) {
-    data = data.toString('utf8');
-
-    if(data.indexOf('%') !== -1) {
-      incoming_message = true;
-
-      buffer += data.split("%").pop();
-
-      return;
-    }
-
-    if(incoming_message) {
-      if(data.indexOf('*') !== -1) {
-        buffer += data.split("*")[0];
-        
-        process.stdout.write(buffer + '\n');
-
-        buffer = '';
-
-        return;
-      }
-
-      buffer += data.toString('utf8');
-    }
-  });
 }
 
 if(params[1] == 'send') {
@@ -78,7 +67,8 @@ if(params[1] == 'send') {
 
       primary.write(Buffer.from(buf).toString());
 
-      console.log('length: ' + buf.length);
+      const hash = md5File.sync(path);
+      console.log('md5: ' + hash);
     });
   })
 }
@@ -119,9 +109,13 @@ if(params[1] == 'receive') {
 
         let filename = base64.decode(buffer[0]);
         let filedata = buffer.pop();
-        
-        base64file.decode(filedata, './incoming/' + filename, function(err, output) {
-          console.log(filename + ' received');
+        let path = './incoming/' + filename;
+
+        base64file.decode(filedata, path, function(err, output) {
+          process.stdout.write(filename + ' received');
+          setTimeout(function() {
+            process.stdout.write(' (' + md5File.sync(path) + ')\n');
+          }, 300);
         });
 
         buffer = '';
